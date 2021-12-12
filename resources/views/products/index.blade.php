@@ -98,10 +98,10 @@
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
-                    
+                    <p>Showing {{ $products[count($products)-1]->id }} to {{$products[0]->id}} out of {{ $total }}</p>
                 </div>
                 <div class="col-md-2">
-                    
+                    {{$products->render()}}
                 </div>
             </div>
         </div>
