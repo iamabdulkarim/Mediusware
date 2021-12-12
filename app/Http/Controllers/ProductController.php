@@ -16,6 +16,7 @@ use File;
 use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
+    const ITEM_PER_PAGE = 2;
     /**
      * Display a listing of the resource.
      *
@@ -23,7 +24,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::all();
+        $products = Product::orderBy('id')->paginate(static::ITEM_PER_PAGE);
         $variants = Variant::all();
         $total = Product::count();
         return view('products.index', compact('products', 'variants', 'total'));
