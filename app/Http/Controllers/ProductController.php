@@ -14,9 +14,10 @@ use Validator;
 use Intervention\Image\Facades\Image;
 use File;
 use Illuminate\Support\Facades\Storage;
+
 class ProductController extends Controller
 {
-    const ITEM_PER_PAGE = 2;
+    const ITEM_PER_PAGE = 5;
     /**
      * Display a listing of the resource.
      *
@@ -24,23 +25,12 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::orderBy('id')->paginate(static::ITEM_PER_PAGE);
+        $products = Product::orderBy('id', 'desc')->paginate(static::ITEM_PER_PAGE);
         $variants = Variant::all();
         $total = Product::count();
         return view('products.index', compact('products', 'variants', 'total'));
-        // $product = DB::table('product_variant_prices')
-                 // ->join('products', 'product_variants.product_id', 'products.id')
-                // ->join('variants', 'product_variants.variant_id', 'variants.id')
-                // ->join('products', 'product_variant_prices.product_id', 'products.id')
-                
-                // ->join('product_variant_prices', 'products.id', 'product_variant_prices.id')
-                // ->select('products.*','product_variant_prices.*,variants.title')
-                // ->orderBy('product_variant_prices.id')
-                // ->get();
-    	// return view('products.index',compact('product'));
-        // $products = product::all();
-        // return view('products.index');
     }
+
     public function filter(Request $request)
     {
         $searchParams = $request->all();
@@ -107,6 +97,7 @@ class ProductController extends Controller
      */
     public function create()
     {
+        
         $variants = Variant::all();
         return view('products.create', compact('variants'));
     }
@@ -119,6 +110,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // check validation rules from getValidationRules method
         $validator = Validator::make(
             $request->all(),
             array_merge(
@@ -169,12 +161,14 @@ class ProductController extends Controller
             return response()->json(['success' => 'product saved successfully'], 200);
         }
     }
+
     public function saveProductVariant($pVariant, $product, $variant, $tag){
         $pVariant->product_id = $product->id;
         $pVariant->variant_id = $variant['option'];
         $pVariant->variant = $tag;
         $pVariant->save();
     }
+
     public function saveProductVariantPrice($priceVariant, $product, $price){
         $priceVariant->product_id = $product->id;
         $priceVariant->product_variant_one = $price['variants'][0] ? $price['variants'][0]->id : NULL;
@@ -184,6 +178,7 @@ class ProductController extends Controller
         $priceVariant->stock = $price['stock']? $price['stock']: 0;
         $priceVariant->save();
     }
+
     public function saveImage($request, $product){
         if(count($request->product_image) > 0 ){
             $images = $request->product_image;
@@ -223,8 +218,9 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $variants = Variant::all();
-        // return view('products.edit', compact('variants'));
+        $product = Product::where('id',$product->id)->with('ProductVariantPrice', 'ProductVariant', 'images')->first();
+        $variants = Variant::with('ProductVariants')->get();
+        return view('products.edit', compact('variants', 'product'));
     }
 
     /**
@@ -236,7 +232,59 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        // check requested product
+        if ($product === null) {
+            return response()->json(['error' => 'product not found'], 404);
+        }
+
+        // check validation rules form getValidationRules method
+        $validator = Validator::make($request->all(), $this->getValidationRules($isNew = false, $product));
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 403);
+        } else {
+            $product->title = $request->title;
+            $product->sku = $request->sku;
+            $product->description = $request->description;
+            $product->save();
+            // save product variant
+            if(count($request->product_variant) > 0){
+                $variants = $request->product_variant;
+                $prices = $request->product_variant_price;
+                foreach($variants as $variant){
+                    foreach($variant['tags'] as $tag){
+                        if(isset($variant['id'])){
+                            $pVariant = ProductVariant::where('id', $variant['id'])->first();
+                            $this->saveProductVariant($pVariant, $product, $variant, $tag);
+                        } else {
+                            $pVariant = new ProductVariant();
+                            $this->saveProductVariant($pVariant, $product, $variant, $tag);
+                        }   
+                    };
+                };
+                // save product variant price
+                foreach($prices as $price){
+                    $names = explode('/', $price['title']);
+                    $vars = [];
+                    foreach($names as $name){
+                        if(isset($name)){
+                            $var = ProductVariant::where('product_id', $product->id)->where('variant', Str::lower($name))->first();
+                            array_push($vars, $var);
+                        }
+                    }
+                    
+                    $price['variants'] = $vars;
+                    if(isset($price['id'])){
+                        $priceVariant = ProductVariantPrice::where('id', $price['id'])->first();
+                        $this->saveProductVariantPrice($priceVariant, $product, $price);
+                    } else {
+                        $priceVariant = new ProductVariantPrice();
+                        $this->saveProductVariantPrice($priceVariant, $product, $price);
+                    }
+                    
+                }
+            }
+            
+        }
     }
 
     /**
@@ -250,6 +298,14 @@ class ProductController extends Controller
         //
     }
 
+    /**
+     * getValidationRules.
+     *
+     * @author  noman
+     * @access  private
+     * @param   boolean $isNew  Default: true
+     * @return  array
+     */
     private function getValidationRules($isNew = true)
     {
         return [

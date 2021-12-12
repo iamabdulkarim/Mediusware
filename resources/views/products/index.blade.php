@@ -2,20 +2,21 @@
 
 @section('content')
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    @if (count($products) > 0)
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Products</h1>
     </div>
-
-
+    
     <div class="card">
-        <form action="" method="get" class="card-header">
+        <form action="{{ route('product.filter')}}" method="post" class="card-header">
+            @csrf
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
                     <input type="text" name="title" placeholder="Product Title" class="form-control">
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
-                         @foreach ($variants as $variant)
+                        @foreach ($variants as $variant)
                             <option disabled value="{{ $variant->id }}">{{ $variant->title }}</option>
                             @foreach ($variant->ProductVariants as $productVariant)
                                 <option value="{{ $productVariant->id }}">{{ $productVariant->variant }}</option> )
@@ -42,7 +43,7 @@
                 </div>
             </div>
         </form>
-
+        
         <div class="card-body">
             <div class="table-response">
                 <table class="table">
@@ -78,23 +79,23 @@
                                 </dd>
                             </dl>
                              @endforeach
-                            <button  class="btn btn-sm btn-link">Show more</button>
+                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                
+                                <a href="{{ route('product.edit', $product->id ) }}" class="btn btn-success">Edit</a>
                             </div>
                         </td>
                     </tr>
                     @endforeach
                     
+
                     </tbody>
 
                 </table>
             </div>
 
         </div>
-
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
@@ -102,9 +103,22 @@
                 </div>
                 <div class="col-md-2">
                     {{$products->render()}}
+                    
                 </div>
             </div>
         </div>
     </div>
+    
+    @else
+        <div class="card">
+            <div class="card-header">
+                <h1 class="h3 mb-0 text-gray-800">Products</h1>
+            </div>
+            <div class="card-body">
+                <p>No Product Found</p>
+            </div>
+        </div>
+        
+    @endif
 
 @endsection
