@@ -40,6 +40,64 @@ class ProductController extends Controller
         // $products = product::all();
         // return view('products.index');
     }
+    public function filter(Request $request)
+    {
+        $searchParams = $request->all();
+        $title = Arr::get($searchParams, 'title', '');
+        $variant = Arr::get($searchParams, 'variant', '');
+        $price_from = Arr::get($searchParams, 'price_from', '');
+        $price_to = Arr::get($searchParams, 'price_to', '');
+        $date = Arr::get($searchParams, 'date', '');
+        $products = [];
+        if(!empty($title)){
+            $products = Product::where('title', 'like', '%'.$title.'%')->paginate(static::ITEM_PER_PAGE);
+        }
+        if(!empty($date)){
+            $products = Product::where('created_at', 'like', '%'.$date.'%')->paginate(static::ITEM_PER_PAGE);
+        }
+        if(!empty($variant)){
+            $productVariant = ProductVariantPrice::where('product_variant_one', $variant)->orwhere('product_variant_two', $variant)->orwhere('product_variant_three', $variant)->first();
+            if(!empty($productVariant)){
+                $products = Product::where('id', $productVariant->product_id)->paginate(static::ITEM_PER_PAGE);
+            }
+        }
+        
+        if(!empty($price_from) && !empty($price_to)){
+            $productVariants = ProductVariantPrice::whereBetween('price', [$price_from, $price_to])->get();
+            foreach ($productVariants as $productVariant) {
+                $product = Product::where('id', $productVariant->product_id)->first();
+                $exists = Arr::exists($products, $product->id);
+                if(!$exists){
+                    $products[] = $product;
+                }
+            }
+        }
+        if(!empty($price_from) && empty($price_to)){
+            $productVariants = ProductVariantPrice::where('price', '>=', $price_from)->get();
+            foreach ($productVariants as $productVariant) {
+                $products[] = Product::where('id', $productVariant->product_id)->first();
+                $exists = Arr::exists($products, $product->id);
+                if(!$exists){
+                    $products[] = $product;
+                }
+                    
+            }
+        }
+        if(!empty($price_to) && empty($price_from)){
+            $productVariants = ProductVariantPrice::where('price', '<=', $price_from)->get();
+            foreach ($productVariants as $productVariant) {
+                $products[] = Product::where('id', $productVariant->product_id)->first();
+                $exists = Arr::exists($products, $product->id);
+                if(!$exists){
+                    $products[] = $product;
+                }
+            }
+        }
+        $total = Product::count();
+        $variants = Variant::all();
+        return view('products.index', compact('products', 'variants', 'total'));
+
+    }
 
     /**
      * Show the form for creating a new resource.
