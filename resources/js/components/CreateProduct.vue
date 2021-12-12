@@ -154,7 +154,6 @@ export default {
             this.product_variant.filter((item) => {
                 tags.push(item.tags);
             })
-
             this.getCombn(tags).forEach(item => {
                 this.product_variant_prices.push({
                     title: item,
@@ -190,7 +189,8 @@ export default {
 
 
             axios.post('/product', product).then(response => {
-                console.log(response.data);
+                alert('Product saved successfully');
+                this.$router.push('/product');
             }).catch(error => {
                 console.log(error);
             })
