@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
 use App\Models\Variant;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Validator;
+use Intervention\Image\Facades\Image;
+use File;
+use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     /**
@@ -15,9 +21,24 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('products.index');
+        $products = Product::all();
+        $variants = Variant::all();
+        $total = Product::count();
+        return view('products.index', compact('products', 'variants', 'total'));
+        // $product = DB::table('product_variant_prices')
+                 // ->join('products', 'product_variants.product_id', 'products.id')
+                // ->join('variants', 'product_variants.variant_id', 'variants.id')
+                // ->join('products', 'product_variant_prices.product_id', 'products.id')
+                
+                // ->join('product_variant_prices', 'products.id', 'product_variant_prices.id')
+                // ->select('products.*','product_variant_prices.*,variants.title')
+                // ->orderBy('product_variant_prices.id')
+                // ->get();
+    	// return view('products.index',compact('product'));
+        // $products = product::all();
+        // return view('products.index');
     }
 
     /**
@@ -63,7 +84,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $variants = Variant::all();
-        return view('products.edit', compact('variants'));
+        // return view('products.edit', compact('variants'));
     }
 
     /**

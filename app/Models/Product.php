@@ -10,4 +10,18 @@ class Product extends Model
         'title', 'sku', 'description'
     ];
 
+    public function ProductVariantPrice()
+    {
+        return $this->hasMany('App\Models\ProductVariantPrice');
+    }
+    public function ProductVariant()
+    {
+        return $this->hasMany('App\Models\ProductVariant');
+    }
+
+    public function images()
+    {
+        return $this->hasMany('App\Models\ProductImage');
+    }
+
 }

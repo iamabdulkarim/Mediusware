@@ -15,7 +15,13 @@
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
-
+                         @foreach ($variants as $variant)
+                            <option disabled value="{{ $variant->id }}">{{ $variant->title }}</option>
+                            @foreach ($variant->ProductVariants as $productVariant)
+                                <option value="{{ $productVariant->id }}">{{ $productVariant->variant }}</option> )
+                                
+                            @endforeach
+                        @endforeach
                     </select>
                 </div>
 
@@ -44,40 +50,44 @@
                     <tr>
                         <th>#</th>
                         <th>Title</th>
-                        <th>Description</th>
+                        <th width="300px">Description</th>
                         <th>Variant</th>
                         <th width="150px">Action</th>
                     </tr>
                     </thead>
 
                     <tbody>
-
-                    <tr>
-                        <td>1</td>
-                        <td>T-Shirt <br> Created at : 25-Aug-2020</td>
-                        <td>Quality product in low cost</td>
+                    @foreach ($products as $product )
+                        <tr>
+                        <td>{{ $loop->index +1 }}</td>
+                        <td>{{ $product->title  }}
+                         <br> Created at : {{date_format($product->created_at,'d-M-Y')}}</td>
+                        <td> {{ \Illuminate\Support\Str::limit($product->description, 250, $end='...') }}</td>
                         <td>
+                            @foreach ($product->ProductVariantPrice as $variant )
                             <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
-
-                                <dt class="col-sm-3 pb-0">
-                                    SM/ Red/ V-Nick
+                                    
+                                <dt class="col-sm-3 pb-0" style="width: 350px">
+                                    <p>{{ $variant->productVariantOne ? $variant->productVariantOne->variant: '' }} / {{ $variant->productVariantTwo ? $variant->productVariantTwo->variant: '' }} / {{ $variant->productVariantThree ? $variant->productVariantThree->variant: '' }}</p>
                                 </dt>
                                 <dd class="col-sm-9">
                                     <dl class="row mb-0">
-                                        <dt class="col-sm-4 pb-0">Price : {{ number_format(200,2) }}</dt>
-                                        <dd class="col-sm-8 pb-0">InStock : {{ number_format(50,2) }}</dd>
+                                        <dt class="col-sm-4 pb-0">Price : {{ $variant->price }}</dt>
+                                        <dd class="col-sm-8 pb-0">InStock : {{ $variant->stock }}</dd>
                                     </dl>
                                 </dd>
                             </dl>
-                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
+                             @endforeach
+                            <button  class="btn btn-sm btn-link">Show more</button>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                
                             </div>
                         </td>
                     </tr>
-
+                    @endforeach
+                    
                     </tbody>
 
                 </table>
@@ -88,10 +98,10 @@
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
-                    <p>Showing 1 to 10 out of 100</p>
+                    
                 </div>
                 <div class="col-md-2">
-
+                    
                 </div>
             </div>
         </div>
