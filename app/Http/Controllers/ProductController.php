@@ -242,6 +242,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 403);
         } else {
+            $product = new Product();
             $product->title = $request->title;
             $product->sku = $request->sku;
             $product->description = $request->description;
@@ -249,7 +250,7 @@ class ProductController extends Controller
             // save product variant
             if(count($request->product_variant) > 0){
                 $variants = $request->product_variant;
-                $prices = $request->product_variant_price;
+                $prices = $request->product_variant_prices;
                 foreach($variants as $variant){
                     foreach($variant['tags'] as $tag){
                         if(isset($variant['id'])){
@@ -298,14 +299,7 @@ class ProductController extends Controller
         //
     }
 
-    /**
-     * getValidationRules.
-     *
-     * @author  noman
-     * @access  private
-     * @param   boolean $isNew  Default: true
-     * @return  array
-     */
+ 
     private function getValidationRules($isNew = true)
     {
         return [
