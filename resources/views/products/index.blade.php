@@ -19,7 +19,7 @@
                         @foreach ($variants as $variant)
                             <option disabled value="{{ $variant->id }}">{{ $variant->title }}</option>
                             @foreach ($variant->ProductVariants as $productVariant)
-                                <option value="{{ $productVariant->id }}">{{ $productVariant->variant }}</option> )
+                                <option value="{{ $productVariant->id }}">{{ $productVariant->variant }}</option> 
                                 
                             @endforeach
                         @endforeach

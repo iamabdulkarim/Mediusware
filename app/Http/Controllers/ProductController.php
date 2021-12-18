@@ -172,8 +172,9 @@ class ProductController extends Controller
     public function saveProductVariantPrice($priceVariant, $product, $price){
         $priceVariant->product_id = $product->id;
         $priceVariant->product_variant_one = $price['variants'][0] ? $price['variants'][0]->id : NULL;
-        $priceVariant->product_variant_two = $price['variants'][1] ? $price['variants'][1]->id: NULL;
-        $priceVariant->product_variant_three = $price['variants'][2] ? $price['variants'][2]->id: NULL;
+        $priceVariant->product_variant_two = $price["variants"][1] ?? "" ? $price["variants"][1] ->id: NULL;
+
+        $priceVariant->product_variant_three = $price['variants'][2] ?? "" ? $price['variants'][2]->id: NULL;
         $priceVariant->price = $price['price']? $price['price'] : 0;
         $priceVariant->stock = $price['stock']? $price['stock']: 0;
         $priceVariant->save();
@@ -242,7 +243,6 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 403);
         } else {
-            $product = new Product();
             $product->title = $request->title;
             $product->sku = $request->sku;
             $product->description = $request->description;
@@ -250,7 +250,7 @@ class ProductController extends Controller
             // save product variant
             if(count($request->product_variant) > 0){
                 $variants = $request->product_variant;
-                $prices = $request->product_variant_prices;
+                $prices = $request->product_variant_price;
                 foreach($variants as $variant){
                     foreach($variant['tags'] as $tag){
                         if(isset($variant['id'])){
@@ -264,7 +264,7 @@ class ProductController extends Controller
                 };
                 // save product variant price
                 foreach($prices as $price){
-                    $names = explode('/', $price['title']);
+                    $names = explode('/', $price["title"] ?? "");
                     $vars = [];
                     foreach($names as $name){
                         if(isset($name)){
@@ -299,7 +299,7 @@ class ProductController extends Controller
         //
     }
 
- 
+   
     private function getValidationRules($isNew = true)
     {
         return [

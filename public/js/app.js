@@ -2330,7 +2330,10 @@ __webpack_require__.r(__webpack_exports__);
       product_sku: "",
       description: "",
       images: [],
-      product_variant: [],
+      product_variant: [{
+        option: this.variants[0].id,
+        tags: []
+      }],
       product_variant_prices: [],
       dropzoneOptions: {
         url: "https://httpbin.org/post",
